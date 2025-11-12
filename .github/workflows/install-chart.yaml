@@ -8,20 +8,19 @@ install-chart:
   strategy:
     matrix:
       k8s: # Update these to supported Kubernetes versions
-        - v1.29
-        - v1.30
         - v1.31
         - v1.32
         - v1.33
+        - v1.34
   steps:
     - name: Checkout
-      uses: actions/checkout@v3 # Updated to v3
+      uses: actions/checkout@v5 # Updated to v3
     - name: Create kind ${{ matrix.k8s }} cluster
-      uses: helm/kind-action@v1.4.0 # Pinned to a specific version (example)
+      uses: helm/kind-action@v2.2.0 # Pinned to a specific version (example)
       with:
         node_image: kindest/node:v${{ matrix.k8s }}
     - name: Run chart-testing (install)
-      uses: helm/chart-testing-action@v2.3.0 # Pinned to a specific version (example)
+      uses: helm/chart-testing-action@v2.4.0 # Pinned to a specific version (example)
       with:
         command: install
         config: .github/ct.yaml

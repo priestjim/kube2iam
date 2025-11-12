@@ -3,6 +3,6 @@ lint-docs:
   needs: lint-chart
   steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v5
     - name: Run helm-docs
       run: .github/helm-docs.sh

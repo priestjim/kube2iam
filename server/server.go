@@ -72,6 +72,7 @@ type Server struct {
 	ResolveDupIPs              bool
 	UseRegionalStsEndpoint     bool
 	AddIPTablesRule            bool
+	AddNFTablesRule            bool
 	AutoDiscoverBaseArn        bool
 	AutoDiscoverDefaultRole    bool
 	Debug                      bool
@@ -244,7 +245,7 @@ func (s *Server) doHealthcheck() {
 	instanceId, err := s.iam.GetInstanceId()
 	if err != nil {
 		errMsg = fmt.Sprintf("Error getting instance id %+v", err)
-		log.Errorf(errMsg)
+		log.Errorf("%s", errMsg)
 		return
 	}
 
