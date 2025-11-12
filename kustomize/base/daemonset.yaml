@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
       - name: kube2iam
-        image: jtblin/kube2iam:latest
+        image: priestjim/kube2iam:latest
         args:
         - --host-ip=$(HOST_IP)
         - --iptables=true

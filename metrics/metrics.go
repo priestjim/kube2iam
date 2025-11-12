@@ -8,7 +8,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/jtblin/kube2iam/version"
+	"github.com/priestjim/kube2iam/version"
 )
 
 const (

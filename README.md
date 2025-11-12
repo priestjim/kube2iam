@@ -1,7 +1,7 @@
 [![CircleCI](https://dl.circleci.com/status-badge/img/circleci/Tv5Xa331HXLx98iuW72Ug4/Po3PqWxjiikmpntHfiZoXW/tree/master.svg?style=shield&circle-token=d0a793bd02cdcccff259a236dde26e6cc749d35d)](https://app.circleci.com/pipelines/circleci/Tv5Xa331HXLx98iuW72Ug4/Po3PqWxjiikmpntHfiZoXW)
-[![Docker Pulls](https://img.shields.io/docker/pulls/jtblin/kube2iam.svg)](https://hub.docker.com/r/jtblin/kube2iam/)
-[![Go Report Card](https://goreportcard.com/badge/github.com/jtblin/kube2iam)](https://goreportcard.com/report/github.com/jtblin/kube2iam)
-[![license](https://img.shields.io/github/license/jtblin/kube2iam.svg)](https://github.com/jtblin/kube2iam/blob/master/LICENSE)
+[![Docker Pulls](https://img.shields.io/docker/pulls/priestjim/kube2iam.svg)](https://hub.docker.com/r/priestjim/kube2iam/)
+[![Go Report Card](https://goreportcard.com/badge/github.com/priestjim/kube2iam)](https://goreportcard.com/report/github.com/priestjim/kube2iam)
+[![license](https://img.shields.io/github/license/priestjim/kube2iam.svg)](https://github.com/priestjim/kube2iam/blob/master/LICENSE)
 
 # kube2iam
 
@@ -112,7 +112,7 @@ spec:
     spec:
       hostNetwork: true
       containers:
-        - image: jtblin/kube2iam:latest
+        - image: priestjim/kube2iam:latest
           name: kube2iam
           args:
             - "--base-role-arn=arn:aws:iam::123456789012:role/"
@@ -181,7 +181,7 @@ spec:
     spec:
       hostNetwork: true
       containers:
-        - image: jtblin/kube2iam:latest
+        - image: priestjim/kube2iam:latest
           name: kube2iam
           args:
             - "--base-role-arn=arn:aws:iam::123456789012:role/"
@@ -403,7 +403,7 @@ spec:
       serviceAccountName: kube2iam
       hostNetwork: true
       containers:
-        - image: jtblin/kube2iam:latest
+        - image: priestjim/kube2iam:latest
           imagePullPolicy: Always
           name: kube2iam
           args:
@@ -500,7 +500,7 @@ spec:
       nodeSelector:
         role: app
       containers:
-        - image: docker.io/jtblin/kube2iam:latest
+        - image: docker.io/priestjim/kube2iam:latest
           imagePullPolicy: Always
           name: kube2iam
           args:
@@ -584,7 +584,7 @@ spec:
       nodeSelector:
         node-role.kubernetes.io/worker: ''
       containers:
-        - image: docker.io/jtblin/kube2iam:latest
+        - image: docker.io/priestjim/kube2iam:latest
           imagePullPolicy: Always
           name: kube2iam
           args:
@@ -747,7 +747,7 @@ Usage of kube2iam:
 
 # Author
 
-Jerome Touffe-Blin, [@jtblin](https://twitter.com/jtblin), [About me](http://about.me/jtblin)
+Jerome Touffe-Blin, [@priestjim](https://twitter.com/priestjim), [About me](http://about.me/priestjim)
 
 # License
 

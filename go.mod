@@ -1,4 +1,4 @@
-module github.com/jtblin/kube2iam
+module github.com/priestjim/kube2iam
 
 go 1.24.0
 

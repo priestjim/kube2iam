@@ -49,7 +49,7 @@ spec:
       serviceAccountName: kube2iam
       hostNetwork: true
       containers:
-        - image: jtblin/kube2iam:latest
+        - image: priestjim/kube2iam:latest
           imagePullPolicy: Always
           name: kube2iam
           args:

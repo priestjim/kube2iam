@@ -15,7 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/ec2"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	smithy "github.com/aws/smithy-go"
-	"github.com/jtblin/kube2iam/metrics"
+	"github.com/priestjim/kube2iam/metrics"
 	"github.com/karlseguin/ccache"
 )
 

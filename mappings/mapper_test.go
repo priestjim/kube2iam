@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/jtblin/kube2iam/iam"
+	"github.com/priestjim/kube2iam/iam"
 	v1 "k8s.io/api/core/v1"
 )
 

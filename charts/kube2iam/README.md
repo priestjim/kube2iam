@@ -1,6 +1,6 @@
 # kube2iam
 
-Installs [kube2iam](https://github.com/jtblin/kube2iam) to provide IAM credentials to pods based on annotations.
+Installs [kube2iam](https://github.com/priestjim/kube2iam) to provide IAM credentials to pods based on annotations.
 
 ## TL;DR;
 
@@ -10,7 +10,7 @@ $ helm install my-release ./kube2iam
 
 ## Introduction
 
-This chart bootstraps a [kube2iam](https://github.com/jtblin/kube2iam) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
+This chart bootstraps a [kube2iam](https://github.com/priestjim/kube2iam) deployment on a [Kubernetes](http://kubernetes.io) cluster using the [Helm](https://helm.sh) package manager.
 
 ## Prerequisites
 
@@ -22,7 +22,7 @@ To install the chart with the release name `my-release`:
 
 ```console
 # Add the chart repository (if you are using a repository)
-$ helm repo add kube2iam https://jtblin.github.io/kube2iam/ # Replace with your actual repository URL if different
+$ helm repo add kube2iam https://priestjim.github.io/kube2iam/ # Replace with your actual repository URL if different
 ```
 
 # Update your Helm repositories
@@ -66,7 +66,7 @@ The following table lists the configurable parameters of the kube2iam chart and 
 | `host.iptables` | Add iptables rule | `false` |
 | `host.interface` | Host interface for proxying AWS metadata | `docker0` |
 | `host.port` | Port to listen on | `8181` |
-| `image.repository` | Image | `jtblin/kube2iam` |
+| `image.repository` | Image | `priestjim/kube2iam` |
 | `image.tag` | Image tag | `0.13.0` |
 | `image.pullPolicy` | Image pull policy | `IfNotPresent` |
 | `image.pullSecrets` | Image pull secrets | `[]` |

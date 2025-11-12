@@ -8,9 +8,9 @@ keywords:
 - aws
 - iam
 - security
-home: https://github.com/jtblin/kube2iam
+home: https://github.com/priestjim/kube2iam
 sources:
-- https://github.com/jtblin/kube2iam
+- https://github.com/priestjim/kube2iam
 maintainers:
 - name: mariusv
   email: myself@mariusv.com
