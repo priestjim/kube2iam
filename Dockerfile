@@ -1,4 +1,4 @@
-FROM golang:1.24 AS BUILDER
+FROM golang:1.24 AS builder
 WORKDIR /go/src/github.com/priestjim/kube2iam
 ENV ARCH=linux
 ENV CGO_ENABLED=0
@@ -10,5 +10,5 @@ RUN apk --no-cache add \
     ca-certificates \
     iptables \
     nftables
-COPY --from=BUILDER /go/src/github.com/priestjim/kube2iam/build/bin/linux/kube2iam /bin/kube2iam
+COPY --from=builder /go/src/github.com/priestjim/kube2iam/build/bin/linux/kube2iam /bin/kube2iam
 ENTRYPOINT ["kube2iam"]

@@ -14,6 +14,7 @@ func AddRule(appPort, metadataAddress, hostInterface, hostIP string) error {
 	if err := checkInterfaceExists(hostInterface); err != nil {
 		return err
 	}
+	actualHostInterface := massageHostInterface(hostInterface)
 
 	if hostIP == "" {
 		return errors.New("--host-ip must be set")
@@ -38,7 +39,7 @@ func AddRule(appPort, metadataAddress, hostInterface, hostIP string) error {
 	// Add the DNAT rule
 	// nft add rule ip kube2iam prerouting ip daddr <metadataAddress> tcp dport 80 iifname <hostInterface> dnat to <hostIP>:<appPort>
 	rule := fmt.Sprintf("ip daddr %s tcp dport 80 iifname %s dnat to %s:%s",
-		metadataAddress, hostInterface, hostIP, appPort)
+		metadataAddress, actualHostInterface, hostIP, appPort)
 
 	// Check if rule already exists
 	exists, err := ruleExists("kube2iam", "prerouting", rule)
@@ -79,6 +80,11 @@ func ruleExists(table, chain, rule string) (bool, error) {
 	}
 
 	return strings.Contains(string(output), rule), nil
+}
+
+// massageHostInterface replaces + with * in the host interface, this is necessary because nftables does not support + in the interface name.
+func massageHostInterface(hostInterface string) string {
+	return strings.Replace(hostInterface, "+", "*", -1)
 }
 
 // checkInterfaceExists validates the interface passed exists for the given system.
