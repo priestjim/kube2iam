@@ -46,10 +46,11 @@ func AddRule(appPort, metadataAddress, hostInterface, hostIP string) error {
 
 	if !exists {
 		// Add the DNAT rule with each component as a separate argument
+		// Use iifname instead of iif to support wildcard interface matching (e.g., eni*)
 		if err := runNftCommand("add", "rule", "ip", "kube2iam", "prerouting",
 			"ip", "daddr", metadataAddress,
 			"tcp", "dport", "80",
-			"iif", actualHostInterface,
+			"iifname", actualHostInterface,
 			"dnat", "to", hostIP+":"+appPort); err != nil {
 			return fmt.Errorf("failed to add nftables rule: %w", err)
 		}
