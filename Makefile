@@ -7,6 +7,7 @@ BUILD_DATE_VAR := $(REPO_PATH)/version.BuildDate
 REPO_VERSION := $$(git describe --abbrev=0 --tags)
 BUILD_DATE := $$(date +%Y-%m-%d-%H:%M)
 GIT_HASH := $$(git rev-parse --short HEAD)
+IMAGE_TAG := $(GIT_HASH)
 GOBUILD_VERSION_ARGS := -ldflags "-s -X $(VERSION_VAR)=$(REPO_VERSION) -X $(GIT_VAR)=$(GIT_HASH) -X $(BUILD_DATE_VAR)=$(BUILD_DATE)"
 # useful for other docker repos
 DOCKER_REPO ?= priestjim
@@ -18,6 +19,7 @@ GOLANGCI_LINT_VERSION ?= v1.23.8
 GOLANGCI_LINT_CONCURRENCY ?= 4
 GOLANGCI_LINT_DEADLINE ?= 180
 PLATFORMS ?= linux/arm/v7,linux/arm64/v8,linux/amd64
+CREATE_BUILDER ?= true
 # useful for passing --build-arg http_proxy :)
 DOCKER_BUILD_FLAGS :=
 
@@ -76,11 +78,13 @@ check-all:
 	golangci-lint run --enable=gocyclo --concurrency=$(GOLANGCI_LINT_CONCURRENCY) --deadline=600s
 
 docker:
-	docker build -t $(IMAGE_NAME):$(GIT_HASH) . $(DOCKER_BUILD_FLAGS)
+	docker build -t $(IMAGE_NAME):$(IMAGE_TAG) . $(DOCKER_BUILD_FLAGS)
 
 dockerx:
+ifeq ($(CREATE_BUILDER), true)
 	docker buildx create --name multiarch --use
-	docker buildx build --push --platform $(PLATFORMS) -t $(MANIFEST_NAME):$(GIT_HASH) . $(DOCKER_BUILD_FLAGS)
+endif
+	docker buildx build --builder multiarch --pull --push --platform $(PLATFORMS) -t $(MANIFEST_NAME):$(IMAGE_TAG) . $(DOCKER_BUILD_FLAGS)
 
 release-dev:
 	if [ -z "$$(docker images -q $(MANIFEST_NAME):$(GIT_HASH) 2> /dev/null)" ]; then \

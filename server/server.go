@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -370,7 +371,7 @@ func write(logger *log.Entry, w http.ResponseWriter, s string) {
 }
 
 // Run runs the specified Server.
-func (s *Server) Run(kubeconfigPath, host, token, nodeName string, insecure bool) error {
+func (s *Server) Run(ctx context.Context, kubeconfigPath, host, token, nodeName string, insecure bool) error {
 	k, err := k8s.NewClient(kubeconfigPath, host, token, nodeName, insecure, s.ResolveDupIPs)
 	if err != nil {
 		return err
@@ -420,10 +421,35 @@ func (s *Server) Run(kubeconfigPath, host, token, nodeName string, insecure bool
 	// This has to be registered last so that it catches fall-throughs
 	r.Handle("/{path:.*}", newAppHandler("reverseProxyHandler", s.reverseProxyHandler))
 
-	log.Infof("Listening on port %s", s.AppPort)
-	if err := http.ListenAndServe(":"+s.AppPort, r); err != nil {
-		log.Fatalf("Error creating kube2iam http server: %+v", err)
+	// Create HTTP server with graceful shutdown support
+	srv := &http.Server{
+		Addr:    ":" + s.AppPort,
+		Handler: r,
 	}
+
+	// Start server in a goroutine
+	go func() {
+		log.Infof("Listening on port %s", s.AppPort)
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			log.Fatalf("Error creating kube2iam http server: %+v", err)
+		}
+	}()
+
+	// Wait for context cancellation
+	<-ctx.Done()
+	log.Info("Shutting down HTTP server...")
+
+	// Create shutdown context with timeout
+	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer shutdownCancel()
+
+	// Attempt graceful shutdown
+	if err := srv.Shutdown(shutdownCtx); err != nil {
+		log.Errorf("HTTP server shutdown error: %v", err)
+		return err
+	}
+
+	log.Info("HTTP server stopped")
 	return nil
 }
 

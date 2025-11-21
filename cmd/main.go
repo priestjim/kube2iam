@@ -1,7 +1,12 @@
 package main
 
 import (
+	"context"
+	"os"
+	"os/signal"
 	"strings"
+	"syscall"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/pflag"
@@ -12,6 +17,27 @@ import (
 	"github.com/priestjim/kube2iam/server"
 	"github.com/priestjim/kube2iam/version"
 )
+
+// cleanup removes iptables or nftables rules on shutdown
+func cleanup(s *server.Server) {
+	if s.AddIPTablesRule {
+		log.Info("Removing iptables rule...")
+		if err := iptables.RemoveRule(s.AppPort, s.MetadataAddress, s.HostInterface, s.HostIP); err != nil {
+			log.Errorf("Failed to remove iptables rule: %s", err)
+		} else {
+			log.Info("iptables rule removed successfully")
+		}
+	}
+
+	if s.AddNFTablesRule {
+		log.Info("Removing nftables rules...")
+		if err := nftables.RemoveRule(); err != nil {
+			log.Errorf("Failed to remove nftables rules: %s", err)
+		} else {
+			log.Info("nftables rules removed successfully")
+		}
+	}
+}
 
 // addFlags adds the command line flags.
 func addFlags(s *server.Server, fs *pflag.FlagSet) {
@@ -117,15 +143,44 @@ func main() {
 		if err := iptables.AddRule(s.AppPort, s.MetadataAddress, s.HostInterface, s.HostIP); err != nil {
 			log.Fatalf("%s", err)
 		}
+		log.Info("iptables rule added successfully")
 	}
 
 	if s.AddNFTablesRule {
 		if err := nftables.AddRule(s.AppPort, s.MetadataAddress, s.HostInterface, s.HostIP); err != nil {
 			log.Fatalf("%s", err)
 		}
+		log.Info("nftables rules added successfully")
 	}
 
-	if err := s.Run(s.KubeconfigPath, s.APIServer, s.APIToken, s.NodeName, s.Insecure); err != nil {
-		log.Fatalf("%s", err)
+	// Set up signal handling for graceful shutdown
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	// Handle shutdown signals
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	// Run server in a goroutine
+	errChan := make(chan error, 1)
+	go func() {
+		errChan <- s.Run(ctx, s.KubeconfigPath, s.APIServer, s.APIToken, s.NodeName, s.Insecure)
+	}()
+
+	// Wait for shutdown signal or error
+	select {
+	case sig := <-sigChan:
+		log.Infof("Received signal %s, initiating graceful shutdown...", sig)
+		cancel()
+		// Give the server time to shutdown gracefully
+		time.Sleep(2 * time.Second)
+	case err := <-errChan:
+		if err != nil {
+			log.Errorf("Server error: %s", err)
+		}
 	}
+
+	// Cleanup rules on shutdown
+	cleanup(s)
+	log.Info("Shutdown complete")
 }

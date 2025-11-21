@@ -30,25 +30,27 @@ func AddRule(appPort, metadataAddress, hostInterface, hostIP string) error {
 		return fmt.Errorf("failed to create nftables table: %w", err)
 	}
 
-	// Create prerouting chain if it doesn't exist
+	// Create prerouting chain if it doesn't exist with dstnat priority
+	// Priority dstnat (-100) is standard for DNAT operations
+	// Policy accept ensures packets that don't match our rule continue processing
 	if err := runNftCommand("add", "chain", "ip", "kube2iam", "prerouting",
-		"{", "type", "nat", "hook", "prerouting", "priority", "-100", ";", "}"); err != nil {
+		"{", "type", "nat", "hook", "prerouting", "priority", "dstnat", ";", "policy", "accept", ";", "}"); err != nil {
 		return fmt.Errorf("failed to create prerouting chain: %w", err)
 	}
 
-	// Add the DNAT rule
-	// nft add rule ip kube2iam prerouting ip daddr <metadataAddress> tcp dport 80 iifname <hostInterface> dnat to <hostIP>:<appPort>
-	rule := fmt.Sprintf("ip daddr %s tcp dport 80 iifname %s dnat to %s:%s",
-		metadataAddress, actualHostInterface, hostIP, appPort)
-
-	// Check if rule already exists
-	exists, err := ruleExists("kube2iam", "prerouting", rule)
+	// Check if rule already exists before adding
+	exists, err := ruleExists("kube2iam", "prerouting", metadataAddress)
 	if err != nil {
 		return fmt.Errorf("failed to check if rule exists: %w", err)
 	}
 
 	if !exists {
-		if err := runNftCommand("add", "rule", "ip", "kube2iam", "prerouting", rule); err != nil {
+		// Add the DNAT rule with each component as a separate argument
+		if err := runNftCommand("add", "rule", "ip", "kube2iam", "prerouting",
+			"ip", "daddr", metadataAddress,
+			"tcp", "dport", "80",
+			"iif", actualHostInterface,
+			"dnat", "to", hostIP+":"+appPort); err != nil {
 			return fmt.Errorf("failed to add nftables rule: %w", err)
 		}
 	}
@@ -85,6 +87,28 @@ func ruleExists(table, chain, rule string) (bool, error) {
 // massageHostInterface replaces + with * in the host interface, this is necessary because nftables does not support + in the interface name.
 func massageHostInterface(hostInterface string) string {
 	return strings.Replace(hostInterface, "+", "*", -1)
+}
+
+// RemoveRule removes the kube2iam nftables table and all associated rules.
+func RemoveRule() error {
+	// Check if nft command is available
+	if _, err := exec.LookPath("nft"); err != nil {
+		return fmt.Errorf("nft command not found: %w", err)
+	}
+
+	// Check if the table exists
+	cmd := exec.Command("nft", "list", "table", "ip", "kube2iam")
+	if err := cmd.Run(); err != nil {
+		// Table doesn't exist, nothing to clean up
+		return nil
+	}
+
+	// Delete the entire table (this removes all chains and rules)
+	if err := runNftCommand("delete", "table", "ip", "kube2iam"); err != nil {
+		return fmt.Errorf("failed to delete nftables table: %w", err)
+	}
+
+	return nil
 }
 
 // checkInterfaceExists validates the interface passed exists for the given system.
